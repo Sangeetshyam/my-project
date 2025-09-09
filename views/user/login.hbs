@@ -1,0 +1,63 @@
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/styles/userlogin.css">
+</head>
+<body>
+        <div class="login-container">
+        <h2>Login</h2>
+        <form method="post" action="/user/login" novalidate>
+            <input type="text" id="create" value="{{{err}}}" hidden>
+            <input type="text" id="message" value="{{{message}}}" hidden>
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="email" id="email" name="email" placeholder="Enter your username" >
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password">
+            </div>
+            <button type="submit" class="login-btn">Login</button>
+            <div class="extra-links">
+                {{!-- <p><a href="#">Forgot Password?</a></p> --}}
+                <p>Don't have an account? <a href="/user/register">Sign up</a></p>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let msg= document.getElementById('message').value
+        if(msg){
+            swal(msg)
+        }
+
+        let createMsg= document.getElementById('create').value
+        if(createMsg){
+            swal("User created successfully")
+        }
+
+        document.addEventListener('DOMContentLoaded',function(){
+            document.querySelector('form').addEventListener('submit',formValidate)
+        })
+        
+        function formValidate(){
+            e.preventDefault()
+            let email = document.getElementById('')
+            let password= document.getElementById('')
+            if(email=='' || password==''){
+                swal({
+              title: "Error",
+              text: "All fields are requied!",
+              icon: "error",
+            });           
+            return false
+            }
+            e.target.submit()
+            return true;
+        }
+    </script>
+</body>
+</html>

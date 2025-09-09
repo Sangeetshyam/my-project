@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <!-- Include SweetAlert CDN for the alert -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #2b5876, #4e4376);
+      color: white;
+    }
+    header {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 1rem 2rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    header h1 { font-size: 1.5rem; }
+    nav ul { list-style: none; display: flex; gap: 1.5rem; }
+    nav ul li a {
+      color: white; text-decoration: none; font-weight: bold; transition: 0.3s;
+      cursor: pointer;
+    }
+    nav ul li a:hover { text-decoration: underline; }
+    main { padding: 2rem; }
+    h2 { margin-bottom: 1.5rem; text-align: center; }
+    table {
+      width: 100%; border-collapse: collapse; background: white; color: black;
+      border-radius: 8px; overflow: hidden;
+    }
+    table th, table td {
+      padding: 0.8rem; text-align: left; border-bottom: 1px solid #ddd;
+    }
+    table th { background: #4e4376; color: white; }
+    table tr:hover { background: #f1f1f1; }
+    .btn {
+      padding: 0.4rem 0.8rem; border: none; border-radius: 6px;
+      cursor: pointer; font-size: 0.9rem;
+    }
+    .btn-edit { background: #28a745; color: white; }
+    .btn-delete { background: #dc3545; color: white; }
+    .btn-edit:hover { background: #218838; }
+    .btn-delete:hover { background: #c82333; }
+
+    /* MODAL */
+    .modal {
+      display: none; /* Ensure modals are hidden by default */
+      position: fixed; z-index: 1000;
+      left: 0; top: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center; align-items: center;
+    }
+    .modal-content {
+      background: #fff; color: #000; padding: 2rem;
+      border-radius: 10px; width: 300px; position: relative;
+    }
+    .modal-content h3 { margin-bottom: 1rem; }
+    .modal-content input {
+      width: 100%; padding: 0.6rem; margin: 0.5rem 0;
+      border: 1px solid #ccc; border-radius: 5px;
+    }
+    .modal-content button {
+      width: 100%; padding: 0.6rem; margin-top: 1rem;
+      border: none; border-radius: 5px; cursor: pointer;
+      background: #4e4376; color: white; font-weight: bold;
+    }
+    .modal-content .btn-cancel {
+      background: #dc3545;
+    }
+    .modal-content .btn-confirm {
+      background: #28a745;
+    }
+    .modal-content .btn-cancel:hover {
+      background: #c82333;
+    }
+    .modal-content .btn-confirm:hover {
+      background: #218838;
+    }
+    .modal-content .button-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .close {
+      position: absolute; top: 10px; right: 15px; cursor: pointer;
+      font-size: 1.2rem; font-weight: bold; color: #333;
+    }
+    /* Search Bar */
+    .search-container {
+      margin-bottom: 1.5rem;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .search-container input {
+      padding: 0.6rem;
+      width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    .search-container input:focus {
+      outline: none;
+      border-color: #4e4376;
+      box-shadow: 0 0 5px rgba(78, 67, 118, 0.5);
+    }
+    .search-container button {
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 5px;
+      background: #4e4376;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .search-container button:hover {
+      background: #3b2e5a;
+    }
+  </style>
+</head>
+<body>
+  <input type="text" id="message" value="{{message}}" hidden>
+  <header>
+    <h1>Admin Dashboard</h1>
+    <nav>
+      <ul>
+        <li><a id="addUserBtn">Add user</a></li>
+        <li><a href="/admin/logout">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <h2>User Data</h2>
+    <div class="search-container">
+      <form action="/admin/search-content" method="post">
+      <input type="text" id="searchBar" name="search" placeholder="Search by email...">
+      <button type="submit" id="searchBtn">Search</button>
+      </form>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Email</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each user}}
+        <tr>
+          <td>{{@index}}</td><td>{{this.email}}</td>
+          <td>
+            <button class="btn btn-edit editBtn" onclick="openEditModal('{{this._id}}')">Edit</button>
+            <button class="btn btn-delete" onclick="openDeleteModal('{{this._id}}')">Delete</button>
+          </td>
+        </tr>
+      {{/each}}
+      </tbody>
+    </table>
+  </main>
+
+  <!-- ADD USER MODAL -->
+  <form action="/admin/adduser" method="post">
+  <div id="addUserModal" class="modal">
+    <div class="modal-content">
+      <span class="close" data-close="addUserModal">&times;</span>
+      <h3>Add User</h3>
+      <input type="text" name="email" placeholder="Email">
+      <input type="password" name="password" placeholder="Password">
+      <button>Submit</button>
+    </div>
+  </div>
+  </form>
+
+  <!-- EDIT USER MODAL -->
+  <div id="editUserModal" class="modal">
+    <form action="/admin/edituser" method="post">
+      <div class="modal-content">
+        <span class="close" data-close="editUserModal">&times;</span>
+        <h3>Edit User</h3>
+        <input id="userId" name="userId" type="hidden">
+        <input name="email" type="text" placeholder="Email">
+        <input name="password" type="password" placeholder="Password">
+        <button type="submit">Submit</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- DELETE CONFIRMATION MODAL -->
+  <div id="deleteUserModal" class="modal">
+    <form action="/admin/deleteuser" method="post">
+      <div class="modal-content">
+        <span class="close" data-close="deleteUserModal">&times;</span>
+        <h3>Confirm Deletion</h3>
+        <p>Are you sure you want to delete this user?</p>
+        <input id="deleteUserId" name="userId" type="hidden">
+        <div class="button-group">
+          <button type="button" class="btn btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+          <button type="submit" class="btn btn-confirm">Confirm</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Show SweetAlert if message exists
+    const msg = document.getElementById('message').value;
+    if (msg) {
+      Swal.fire({
+        title: 'Success',
+        text: 'Admin logged',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+    }
+
+    // Open Add User modal
+    document.getElementById("addUserBtn").onclick = function() {
+      document.getElementById("addUserModal").style.display = "flex";
+    };
+
+    // Open Edit User modal
+    function openEditModal(id) {
+      document.getElementById("editUserModal").style.display = "flex";
+      document.getElementById("userId").value = id;
+    }
+
+    // Open Delete Confirmation modal
+    function openDeleteModal(id) {
+      document.getElementById("deleteUserModal").style.display = "flex";
+      document.getElementById("deleteUserId").value = id;
+    }
+
+    // Close Delete Confirmation modal
+    function closeDeleteModal() {
+      document.getElementById("deleteUserModal").style.display = "none";
+    }
+
+    // Close modals
+    document.querySelectorAll(".close").forEach(closeBtn => {
+      closeBtn.onclick = function() {
+        document.getElementById(this.dataset.close).style.display = "none";
+      };
+    });
+
+    // Close modal when clicking outside
+    window.onclick = function(e) {
+      if (e.target.classList.contains("modal")) {
+        e.target.style.display = "none";
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+
+<link rel="stylesheet" href="/styles/userregister.css">
+<body>
+    <div class="register-container">
+        <h2>Create Account</h2>
+        <form method="post" action="/user/register" novalidate>
+            <input type="text" id="message" value="{{{message}}}" hidden>
+            <div class="input-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" >
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Create a password" >
+            </div>
+            <div class="input-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" name="confirmPassword" placeholder="Re-enter your password" >
+            </div>
+            <button type="submit" class="register-btn">Register</button>
+            <div class="extra-links">
+                <p>Already have an account? <a href="/user/login">Login here</a></p>
+            </div>
+        </form>
+    </div>
+</body>
+
+<script>
+    let msg =document.getElementById('message').value
+    if(msg){
+        swal(msg)
+    }
+    
+    document.addEventListener('DOMContentLoaded',function(){
+        document.querySelector('form').addEventListener('submit',formValidate)
+    })
+       
+    function formValidate(e){
+        e.preventDefault()
+        let email=document.getElementById('email').value
+        let password=document.getElementById('password').value
+        let confirmPassword=document.getElementById('confirm-password').value
+       
+        if(email.length=='' || password=='' || confirmPassword==''){
+          swal({
+              title: "Error",
+              text: "All fields are requied!",
+              icon: "error",
+            });           
+            return false
+        }
+        else if(confirmPassword != password){
+            swal({
+              title: "Error",
+              text: "Passwords do not match",
+              icon: "error",
+            }); 
+            return false
+        }
+        e.target.submit()
+        return true
+    }
+</script>
